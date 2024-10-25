@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sph.sphmedia.ui.brewery.BreweryDetailScreen
 import com.sph.sphmedia.ui.brewery.BreweryListScreen
+import com.sphmedia.common.MainDestinations
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,13 +26,13 @@ class MainActivity : ComponentActivity() {
 
             FullScreenEffect()
 
-            NavHost(navController = navController, startDestination = "breweryList") {
+            NavHost(navController = navController, startDestination = MainDestinations.BREWERY_LIST) {
 
-                composable("breweryList") {
+                composable(MainDestinations.BREWERY_LIST) {
                     BreweryListScreen(navController = navController)
                 }
 
-                composable("brewery_detail/{breweryId}") { backStackEntry ->
+                composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->
                     BreweryDetailScreen(navController, backStackEntry.arguments?.getString("breweryId") ?: "")
                 }
 
