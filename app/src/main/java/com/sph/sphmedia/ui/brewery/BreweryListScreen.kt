@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
@@ -21,8 +23,11 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +42,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.sph.sphmedia.R
 import com.sphmedia.common.MainDestinations
 import com.sphmedia.data.model.Brewery
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 enum class BreweryTypeTab(@StringRes val titleResourceId: Int) {
@@ -62,7 +71,8 @@ fun BreweryListScreen(navController: NavController) {
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val selectedTabIndex = pagerState.currentPage
     val coroutineScope = rememberCoroutineScope()
-
+// In your parent composable (e.g., the one hosting the tabs)
+    val lazyGridStates = remember { mutableStateMapOf<String, LazyGridState>() }
 
 
     Column {
@@ -77,24 +87,46 @@ fun BreweryListScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         ) { page ->
 
-            TabContent(
-                navController = navController,
-                breweryType = stringResource(BreweryTypeTab.entries[page].titleResourceId)
-            )
+            if (page == selectedTabIndex) {
+                TabContent(
+                    lazyGridStates,
+                    navController = navController,
+                    breweryType = stringResource(BreweryTypeTab.entries[page].titleResourceId)
+                )
+            }
         }
     }
 }
 
 
+@OptIn(FlowPreview::class)
 @Composable
 private fun TabContent(
+    lazyGridStates: MutableMap<String, LazyGridState>,
     breweryType: String,
     navController: NavController,
     viewModel: BreweryListViewModel = hiltViewModel()
 ) {
+
+    val lazyGridState = lazyGridStates.getOrPut(breweryType) { rememberLazyGridState() }
+
+    val coroutineScope = rememberCoroutineScope()
+
     val lazyPagingItems = viewModel.getBreweriesStream(breweryType).collectAsLazyPagingItems()
 
-    LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
+    LaunchedEffect(key1 = breweryType, key2 = viewModel.getCurrentScrollPosition(breweryType)) {
+        delay(100)
+        lazyGridState.scrollToItem(viewModel.getCurrentScrollPosition(breweryType))
+    }
+
+    LaunchedEffect(lazyGridState) {
+        snapshotFlow { lazyGridState.firstVisibleItemIndex }.debounce(500L)
+            .collectLatest { viewModel.setCurrentScrollPosition(breweryType, it) }
+    }
+
+    LazyVerticalGrid(
+        state = lazyGridState, columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()
+    ) {
         items(count = lazyPagingItems.itemCount,
             key = { index -> lazyPagingItems[index]?.id ?: index }) { index ->
             val item = lazyPagingItems[index]
