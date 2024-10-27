@@ -44,19 +44,12 @@ class BreweryRepository @Inject constructor(
 
 
     // Modify this method to accept the page number
-    fun getBreweriesStream(breweryType: String): Flow<PagingData<Brewery>> {
-        // Your existing logic to fetch data
-        // Update it to start fetching from the specified page
-        return Pager(config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = {
-                BreweryPagingSource(
-                    breweryDao = breweryDao,
-                    breweryCacheDao = breweryCacheDao,
-                    apiService = breweryApi,
-                    breweryType = breweryType
-                )
-            }).flow
-    }
+    fun getBreweriesStream(breweryType: String) = BreweryPagingSource(
+        breweryDao = breweryDao,
+        breweryCacheDao = breweryCacheDao,
+        apiService = breweryApi,
+        breweryType = breweryType
+    )
 
 
     // Fetch brewery details by ID from local database or remote API

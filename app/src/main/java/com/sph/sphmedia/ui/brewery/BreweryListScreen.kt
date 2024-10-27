@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.sph.sphmedia.R
 import com.sph.sphmedia.ui.theme.rotatingProgressBarColor
@@ -68,84 +68,90 @@ fun BreweryListScreen(
     val selectedTabIndex by remember { derivedStateOf { pagerState.currentPage } }
 
     Column {
-        ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
-            tabList.forEachIndexed { index, tab ->
-                Tab(selected = selectedTabIndex == index,
-                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
-                    text = {
-                        Text(text = stringResource(tab.titleResourceId))
-                    })
-            }
+        BreweryTabRow(tabList, selectedTabIndex) { index ->
+            coroutineScope.launch { pagerState.animateScrollToPage(index) }
         }
-
 
         HorizontalPager(
             state = pagerState,
             pageSize = PageSize.Fill,
             beyondViewportPageCount = 1,
             modifier = Modifier.fillMaxSize()
-        ) {
+        ) { pageIndex ->
+            val breweryType = tabList[pageIndex].name.lowercase()
+            val lazyPagingItems = viewModel.getOrCreatePager(breweryType).collectAsLazyPagingItems()
 
-            val breweryType = stringResource(BreweryTypeTab.entries[it].titleResourceId)
-            val breweriesStream = remember(breweryType) {
-                viewModel.getBreweriesStream(breweryType)
-            }
-
-            val lazyPagingItems = breweriesStream.collectAsLazyPagingItems()
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-            ) {
-
-                if (lazyPagingItems.loadState.refresh == LoadState.Loading) {
-                    item {
-                        Column(
-                            modifier = Modifier.fillParentMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(color = rotatingProgressBarColor)
-                        }
-                    }
-                }
-
-
-                items(
-                    // The key is important so the lazy list can remember your
-                    // scroll position when more items are fetched!
-                    key = { index -> lazyPagingItems[index]?.id ?: "" },
-                    count = lazyPagingItems.itemCount,
-                    contentType = { }) { index ->
-                    lazyPagingItems[index]?.let { item ->
-                        BreweryItem(item) {
-                            openBreweryDetail(item.id)
-                        }
-                    }
-                }
-
-
-                if (lazyPagingItems.loadState.append == LoadState.Loading) {
-                    item {
-                        CircularProgressIndicator(
-                            color = rotatingProgressBarColor,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentWidth(Alignment.CenterHorizontally)
-                        )
-                    }
-                }
-
-
-            }
+            BreweryLazyColumn(lazyPagingItems, openBreweryDetail)
         }
     }
 }
 
+@Composable
+fun BreweryTabRow(
+    tabList: Array<BreweryTypeTab>,
+    selectedTabIndex: Int,
+    onTabClick: (Int) -> Unit
+) {
+    ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
+        tabList.forEachIndexed { index, tab ->
+            Tab(selected = selectedTabIndex == index,
+                onClick = { onTabClick(index) },
+                text = { Text(text = stringResource(tab.titleResourceId)) })
+        }
+    }
+}
 
 @Composable
-fun BreweryItem(brewery: Brewery, clicked: () -> Unit) {
+fun BreweryLazyColumn(
+    lazyPagingItems: LazyPagingItems<Brewery>, openBreweryDetail: (breweryId: String) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        when (lazyPagingItems.loadState.refresh) {
+            is LoadState.Loading -> item { FullScreenLoadingIndicator() }
+            else -> {
+                items(
+                    key = { index -> lazyPagingItems[index]?.id ?: "" },
+                    count = lazyPagingItems.itemCount
+                ) { index ->
+                    lazyPagingItems[index]?.let { item ->
+                        BreweryItem(item, onClick = { openBreweryDetail(item.id) })
+                    }
+                }
+            }
+        }
+
+        if (lazyPagingItems.loadState.append == LoadState.Loading) {
+            item { PagingLoadingIndicator() }
+        }
+    }
+}
+
+@Composable
+fun FullScreenLoadingIndicator() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(color = rotatingProgressBarColor)
+    }
+}
+
+@Composable
+fun PagingLoadingIndicator() {
+    CircularProgressIndicator(
+        color = rotatingProgressBarColor,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentWidth(Alignment.CenterHorizontally)
+    )
+}
+
+
+@Composable
+fun BreweryItem(brewery: Brewery, onClick: () -> Unit) {
 
     ElevatedCard(elevation = CardDefaults.cardElevation(
         defaultElevation = 6.dp
@@ -153,17 +159,16 @@ fun BreweryItem(brewery: Brewery, clicked: () -> Unit) {
         modifier = Modifier
             .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
             .clickable {
-                clicked()
+                onClick()
             }
             .fillMaxWidth()
-            .wrapContentHeight()
-    ) {
+            .wrapContentHeight()) {
 
         Column(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth()
-                .clickable { clicked() },
+                .clickable { onClick() },
             horizontalAlignment = Alignment.Start
         ) {
             Text(
