@@ -150,32 +150,7 @@ fun BreweryListScreen(
 }
 
 
-@Composable
-fun LoadingSpinner(loadState: CombinedLoadStates) {
-    when (loadState.append) {
-        is LoadState.Loading -> {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
 
-        is LoadState.Error -> {
-            Text(
-                text = "Error loading more items!",
-                color = Color.Red,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-
-        else -> {}
-    }
-
-    if (loadState.refresh is LoadState.Loading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    }
-}
 
 @Composable
 fun BreweryItem(brewery: Brewery, clicked: () -> Unit) {
