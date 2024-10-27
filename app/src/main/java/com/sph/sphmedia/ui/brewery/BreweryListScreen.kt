@@ -1,54 +1,53 @@
 package com.sph.sphmedia.ui.brewery
 
-
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.sph.sphmedia.R
+import com.sph.sphmedia.ui.theme.rotatingProgressBarColor
 import com.sphmedia.common.MainDestinations
 import com.sphmedia.data.model.Brewery
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
-import timber.log.Timber
+
 
 enum class BreweryTypeTab(@StringRes val titleResourceId: Int) {
     Micro(titleResourceId = R.string.micro), Nano(titleResourceId = R.string.nano), Regional(
@@ -72,120 +71,79 @@ class BreweryListScreenStateHolder {
 
 @Composable
 fun BreweryListScreen(
-    navController: NavController, screenStateHolder : BreweryListScreenStateHolder
+    navController: NavController, viewModel: BreweryListViewModel = hiltViewModel()
 ) {
-    val tabs = remember { BreweryTypeTab.entries.toTypedArray() }
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val tabList = remember { BreweryTypeTab.entries.toTypedArray() }
     val coroutineScope = rememberCoroutineScope()
-
+    val pagerState = rememberPagerState(pageCount = { tabList.size })
     val selectedTabIndex by remember { derivedStateOf { pagerState.currentPage } }
 
     Column {
-        BreweryTabs(tabs = tabs, selectedTabIndex = selectedTabIndex, onTabSelected = { index ->
-            coroutineScope.launch { pagerState.animateScrollToPage(index) }
-        })
-
-        BreweryPager(
-            pagerState,
-            screenStateHolder.lazyGridStates,
-            navController,
-            selectedTabIndex
-        )
-    }
-}
-
-
-@Composable
-fun BreweryPager(
-    pagerState: PagerState,
-    lazyGridStates: MutableMap<String, LazyGridState>,
-    navController: NavController,
-    selectedTabIndex: Int,
-    viewModel: BreweryListViewModel = hiltViewModel()
-) {
-    HorizontalPager(
-        state = pagerState,
-        pageSize = PageSize.Fill,
-        beyondViewportPageCount = 1,
-        modifier = Modifier.fillMaxSize()
-    ) { page ->
-
-        val breweryType = stringResource(BreweryTypeTab.entries[page].titleResourceId)
-        val breweriesStream = remember(breweryType) {
-            viewModel.getBreweriesStream(breweryType)
-        }
-
-        val lazyPagingItems = breweriesStream.collectAsLazyPagingItems()
-
-
-        if (page == selectedTabIndex) {
-            TabContent(
-                lazyPagingItems,
-                lazyGridStates,
-                navController = navController,
-                breweryType = breweryType
-            )
-        }
-    }
-}
-
-
-@OptIn(FlowPreview::class)
-@Composable
-private fun TabContent(
-    lazyPagingItems: LazyPagingItems<Brewery>,
-    lazyGridStates: MutableMap<String, LazyGridState>,
-    breweryType: String,
-    navController: NavController,
-    viewModel: BreweryListViewModel = hiltViewModel()
-) {
-
-    val lazyGridState =
-        lazyGridStates.getOrPut(breweryType) { rememberSaveable(saver = LazyGridState.Saver) { LazyGridState() } }
-
-    LaunchedEffect(key1 = lazyGridState) {
-        // Delay the println until after the LazyVerticalGrid has laid out
-        snapshotFlow { lazyGridState.firstVisibleItemIndex }
-            .collect { index ->
-                println("LazyGrid: $breweryType $index")
+        ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
+            tabList.forEachIndexed { index, tab ->
+                Tab(selected = selectedTabIndex == index,
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                    text = {
+                        Text(text = stringResource(tab.titleResourceId))
+                    })
             }
-    }
-    LazyVerticalGrid(
-        state = lazyGridState, columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()
-    ) {
-        items(count = lazyPagingItems.itemCount,
-            key = { index -> lazyPagingItems[index]?.id ?: index }) { index ->
-            val item = lazyPagingItems[index]
-            if (item != null) {
-                BreweryItem(brewery = item) {
-                    viewModel.setCurrentScrollPosition(
-                        breweryType,
-                        lazyGridState.firstVisibleItemIndex
-                    )
-                    navController.navigate(MainDestinations.BREWERY_LIST_DETAIL_ROUTE + "/${item.id}") {
-                        popUpTo(MainDestinations.BREWERY_LIST) { inclusive = false }
+        }
+
+
+        HorizontalPager(
+            state = pagerState,
+            pageSize = PageSize.Fill,
+            beyondViewportPageCount = 1,
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            val breweryType = stringResource(BreweryTypeTab.entries[it].titleResourceId)
+            val breweriesStream = remember(breweryType) {
+                viewModel.getBreweriesStream(breweryType)
+            }
+
+            val lazyPagingItems = breweriesStream.collectAsLazyPagingItems()
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+            ) {
+
+                if (lazyPagingItems.loadState.refresh == LoadState.Loading) {
+                    item {
+                        Column(
+                            modifier = Modifier.fillParentMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(color = rotatingProgressBarColor)
+                        }
                     }
                 }
-            }
-        }
 
-        lazyPagingItems.apply {
-            when {
-                loadState.refresh is LoadState.Loading -> {
-                    item { LoaderItem() }
+
+                items(lazyPagingItems.itemCount) { index ->
+                    lazyPagingItems[index]?.let { item ->
+                        BreweryItem(item) {
+                            navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${item.id}")
+                        }
+                    }
                 }
 
-                loadState.refresh is LoadState.Error -> {
-                    item { ErrorItem(message = "Error loading items!") }
+
+                if (lazyPagingItems.loadState.append == LoadState.Loading) {
+                    item {
+                        CircularProgressIndicator(
+                            color = rotatingProgressBarColor,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
 
-                loadState.append is LoadState.Loading -> {
-                    item { LoaderItem() }
-                }
 
-                loadState.append is LoadState.Error -> {
-                    item { ErrorItem(message = "Error loading more items!") }
-                }
             }
         }
     }
@@ -193,59 +151,72 @@ private fun TabContent(
 
 
 @Composable
-fun BreweryTabs(
-    tabs: Array<BreweryTypeTab>, selectedTabIndex: Int, onTabSelected: (Int) -> Unit
-) {
-    ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
-        tabs.forEachIndexed { index, tab ->
-            Tab(selected = selectedTabIndex == index, onClick = { onTabSelected(index) }, text = {
-                Text(text = stringResource(id = tab.titleResourceId))
-            })
+fun LoadingSpinner(loadState: CombinedLoadStates) {
+    when (loadState.append) {
+        is LoadState.Loading -> {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is LoadState.Error -> {
+            Text(
+                text = "Error loading more items!",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        else -> {}
+    }
+
+    if (loadState.refresh is LoadState.Loading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
     }
 }
-
-@Composable
-fun ErrorItem(message: String) {
-    Text(
-        text = message, modifier = Modifier.padding(16.dp), color = Color.Red
-    )
-}
-
 
 @Composable
 fun BreweryItem(brewery: Brewery, clicked: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .padding(8.dp)
-            .background(Color.LightGray)
-            .padding(16.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .fillMaxWidth()
-            .clickable { clicked() },
-        horizontalAlignment = Alignment.Start
-    ) {
-        Text(
-            text = brewery.name,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Text(text = "Type: ${brewery.brewery_type}", style = MaterialTheme.typography.labelLarge)
-        Text(text = brewery.address_1 ?: "", style = MaterialTheme.typography.labelLarge)
-        brewery.address_2?.let { Text(text = it, style = MaterialTheme.typography.labelLarge) }
-        brewery.address_3?.let { Text(text = it, style = MaterialTheme.typography.labelLarge) }
-        Text(text = "City: ${brewery.city}", style = MaterialTheme.typography.labelLarge)
-    }
-}
 
-@Composable
-fun LoaderItem() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp), contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-}
+    ElevatedCard(elevation = CardDefaults.cardElevation(
+        defaultElevation = 6.dp
+    ), modifier = Modifier
+        .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
+        .clickable {
+            clicked()
+        }.fillMaxWidth().wrapContentHeight()) {
 
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clickable { clicked() },
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = brewery.name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Type: ${brewery.brewery_type}", style = MaterialTheme.typography.labelLarge
+            )
+            Text(text = brewery.address_1 ?: "", style = MaterialTheme.typography.labelLarge)
+            brewery.address_2?.let {
+                Text(
+                    text = it, style = MaterialTheme.typography.labelLarge
+                )
+            }
+            brewery.address_3?.let {
+                Text(
+                    text = it, style = MaterialTheme.typography.labelLarge
+                )
+            }
+            Text(text = "City: ${brewery.city}", style = MaterialTheme.typography.labelLarge)
+        }
+    }
+
+
+}

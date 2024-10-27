@@ -11,4 +11,6 @@
     <string name="contract">contract</string>
     <string name="proprietor">proprietor</string>
     <string name="closed">closed</string>
+
+    <string name="try_again">"Try again"</string>
 </resources>

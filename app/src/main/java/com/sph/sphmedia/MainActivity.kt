@@ -22,10 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sph.sphmedia.ui.brewery.BreweryDetailScreen
-import com.sph.sphmedia.ui.brewery.BreweryListScreen
 import com.sph.sphmedia.ui.brewery.BreweryListScreenStateHolder
-import com.sph.sphmedia.ui.brewery.LazyVerticalDetailView
-import com.sph.sphmedia.ui.brewery.LazyVerticalGridDemo
+import com.sph.sphmedia.ui.brewery.BreweryListScreen
+import com.sph.sphmedia.ui.theme.SPHMediaTheme
 import com.sphmedia.common.MainDestinations
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,36 +35,34 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val navController = rememberNavController()
-            val screenStateHolder = remember { BreweryListScreenStateHolder() }
-            FullScreenEffect()
-            Scaffold { innerPaddingModifier ->
-                val newPadding = PaddingValues(
-                    start = innerPaddingModifier.calculateStartPadding(LocalLayoutDirection.current),
-                    end = innerPaddingModifier.calculateEndPadding(LocalLayoutDirection.current),
-                    top = innerPaddingModifier.calculateTopPadding(),
-                    bottom = 0.dp,
-                )
-                NavHost(
-                    navController = navController,
-                    startDestination = MainDestinations.BREWERY_LIST,
-                    modifier = Modifier.padding(newPadding),
-                ) {
+            SPHMediaTheme {
+                val navController = rememberNavController()
+                val screenStateHolder = remember { BreweryListScreenStateHolder() }
+                FullScreenEffect()
+                Scaffold { innerPaddingModifier ->
+                    val newPadding = PaddingValues(
+                        start = innerPaddingModifier.calculateStartPadding(LocalLayoutDirection.current),
+                        end = innerPaddingModifier.calculateEndPadding(LocalLayoutDirection.current),
+                        top = innerPaddingModifier.calculateTopPadding(),
+                        bottom = 0.dp,
+                    )
+                    NavHost(
+                        navController = navController,
+                        startDestination = MainDestinations.BREWERY_LIST,
+                        modifier = Modifier.padding(newPadding),
+                    ) {
 
-                    composable(MainDestinations.BREWERY_LIST) {
-                        //BreweryListScreen(navController = navController, screenStateHolder)
-                        LazyVerticalGridDemo(navController)
-                    }
+                        composable(MainDestinations.BREWERY_LIST) {
+                            BreweryListScreen(navController)
+                        }
 
-                    composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->
-                        BreweryDetailScreen(
-                            navController, backStackEntry.arguments?.getString("breweryId") ?: ""
-                        )
-                    }
+                        composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->
+                            BreweryDetailScreen(
+                                navController,
+                                backStackEntry.arguments?.getString("breweryId") ?: ""
+                            )
+                        }
 
-                    composable("testingDetails") {
-                        //BreweryListScreen(navController = navController, screenStateHolder)
-                        LazyVerticalDetailView()
                     }
                 }
             }
