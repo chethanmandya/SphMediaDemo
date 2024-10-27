@@ -3,18 +3,14 @@ package com.sph.sphmedia.ui.brewery
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
@@ -28,23 +24,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.sph.sphmedia.R
 import com.sph.sphmedia.ui.theme.rotatingProgressBarColor
-import com.sphmedia.common.MainDestinations
 import com.sphmedia.data.model.Brewery
 import kotlinx.coroutines.launch
 
@@ -68,7 +59,8 @@ enum class BreweryTypeTab(@StringRes val titleResourceId: Int) {
 
 @Composable
 fun BreweryListScreen(
-    navController: NavController, viewModel: BreweryListViewModel = hiltViewModel()
+    viewModel: BreweryListViewModel = hiltViewModel(),
+    openBreweryDetail: (breweryId: String) -> Unit
 ) {
     val tabList = remember { BreweryTypeTab.entries.toTypedArray() }
     val coroutineScope = rememberCoroutineScope()
@@ -120,10 +112,15 @@ fun BreweryListScreen(
                 }
 
 
-                items(lazyPagingItems.itemCount) { index ->
+                items(
+                    // The key is important so the lazy list can remember your
+                    // scroll position when more items are fetched!
+                    key = { index -> lazyPagingItems[index]?.id ?: "" },
+                    count = lazyPagingItems.itemCount,
+                    contentType = { }) { index ->
                     lazyPagingItems[index]?.let { item ->
                         BreweryItem(item) {
-                            navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${item.id}")
+                            openBreweryDetail(item.id)
                         }
                     }
                 }
@@ -147,18 +144,20 @@ fun BreweryListScreen(
 }
 
 
-
-
 @Composable
 fun BreweryItem(brewery: Brewery, clicked: () -> Unit) {
 
     ElevatedCard(elevation = CardDefaults.cardElevation(
         defaultElevation = 6.dp
-    ), modifier = Modifier
-        .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
-        .clickable {
-            clicked()
-        }.fillMaxWidth().wrapContentHeight()) {
+    ),
+        modifier = Modifier
+            .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
+            .clickable {
+                clicked()
+            }
+            .fillMaxWidth()
+            .wrapContentHeight()
+    ) {
 
         Column(
             modifier = Modifier

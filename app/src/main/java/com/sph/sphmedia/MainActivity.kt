@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -22,7 +21,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.sph.sphmedia.ui.brewery.BreweryDetailScreen
-import com.sph.sphmedia.ui.brewery.BreweryListScreenStateHolder
 import com.sph.sphmedia.ui.brewery.BreweryListScreen
 import com.sph.sphmedia.ui.theme.SPHMediaTheme
 import com.sphmedia.common.MainDestinations
@@ -52,7 +50,9 @@ class MainActivity : ComponentActivity() {
                     ) {
 
                         composable(MainDestinations.BREWERY_LIST) {
-                            BreweryListScreen(navController)
+                            BreweryListScreen { itemId ->
+                                navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${itemId}")
+                            }
                         }
 
                         composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->
