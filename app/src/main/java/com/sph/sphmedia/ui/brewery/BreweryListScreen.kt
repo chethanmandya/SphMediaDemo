@@ -1,8 +1,10 @@
 package com.sph.sphmedia.ui.brewery
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -88,15 +90,14 @@ fun BreweryListScreen(
 
 @Composable
 fun BreweryTabRow(
-    tabList: Array<BreweryTypeTab>,
-    selectedTabIndex: Int,
-    onTabClick: (Int) -> Unit
+    tabList: Array<BreweryTypeTab>, selectedTabIndex: Int, onTabClick: (Int) -> Unit
 ) {
     ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
         tabList.forEachIndexed { index, tab ->
-            Tab(selected = selectedTabIndex == index,
-                onClick = { onTabClick(index) },
-                text = { Text(text = stringResource(tab.titleResourceId)) })
+            Tab(selected = selectedTabIndex == index, onClick = { onTabClick(index) }, text = {
+                val label = stringResource(tab.titleResourceId).replaceFirstChar { it.uppercase() }
+                Text(text = label)
+            })
         }
     }
 }
@@ -105,35 +106,41 @@ fun BreweryTabRow(
 fun BreweryLazyColumn(
     lazyPagingItems: LazyPagingItems<Brewery>, openBreweryDetail: (breweryId: String) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        when (lazyPagingItems.loadState.refresh) {
-            is LoadState.Loading -> item { FullScreenLoadingIndicator() }
-            else -> {
-                items(
-                    key = { index -> lazyPagingItems[index]?.id ?: "" },
-                    count = lazyPagingItems.itemCount
-                ) { index ->
-                    lazyPagingItems[index]?.let { item ->
-                        BreweryItem(item, onClick = { openBreweryDetail(item.id) })
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when (lazyPagingItems.loadState.refresh) {
+                is LoadState.Loading -> item { /* Leave empty to avoid duplicating indicator */ }
+                else -> {
+                    items(
+                        key = { index -> lazyPagingItems[index]?.id ?: "" },
+                        count = lazyPagingItems.itemCount
+                    ) { index ->
+                        lazyPagingItems[index]?.let { item ->
+                            BreweryItem(item, onClick = { openBreweryDetail(item.id) })
+                        }
                     }
                 }
             }
+
+            if (lazyPagingItems.loadState.append == LoadState.Loading) {
+                item { PagingLoadingIndicator() }
+            }
         }
 
-        if (lazyPagingItems.loadState.append == LoadState.Loading) {
-            item { PagingLoadingIndicator() }
+        if (lazyPagingItems.loadState.refresh is LoadState.Loading) {
+            FullScreenLoadingIndicator()
         }
     }
 }
 
 @Composable
 fun FullScreenLoadingIndicator() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier
+            .fillMaxSize(), // Optional dimmed background
+        contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(color = rotatingProgressBarColor)
     }
@@ -166,7 +173,7 @@ fun BreweryItem(brewery: Brewery, onClick: () -> Unit) {
 
         Column(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(16.dp)
                 .fillMaxWidth()
                 .clickable { onClick() },
             horizontalAlignment = Alignment.Start
