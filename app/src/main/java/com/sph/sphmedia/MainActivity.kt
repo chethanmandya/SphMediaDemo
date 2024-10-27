@@ -37,7 +37,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             SPHMediaTheme {
                 val navController = rememberNavController()
-                val screenStateHolder = remember { BreweryListScreenStateHolder() }
                 FullScreenEffect()
                 Scaffold { innerPaddingModifier ->
                     val newPadding = PaddingValues(

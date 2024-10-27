@@ -65,9 +65,6 @@ enum class BreweryTypeTab(@StringRes val titleResourceId: Int) {
 
 }
 
-class BreweryListScreenStateHolder {
-    val lazyGridStates = mutableStateMapOf<String, LazyGridState>()
-}
 
 @Composable
 fun BreweryListScreen(
