@@ -1,6 +1,6 @@
 package com.sph.sphmedia.repo
 
-import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -9,21 +9,25 @@ import com.sphmedia.data.db.AppDatabase
 import com.sphmedia.data.db.BreweryCacheDao
 import com.sphmedia.data.db.BreweryDao
 import com.sphmedia.data.model.Brewery
+import com.sphmedia.domain.repository.BreweryPagingSource
 import com.sphmedia.domain.repository.BreweryRepositoryImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
@@ -53,15 +57,11 @@ class BreweryRepositoryImplTest {
         breweryCacheDao = database.breweryCacheDao()
 
         // Set up Moshi for Retrofit
-        val moshi = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+        val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
         // Set up Retrofit for the API service
-        breweryService = Retrofit.Builder()
-            .baseUrl(mockWebServer.url("/"))
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
+        breweryService = Retrofit.Builder().baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(MoshiConverterFactory.create(moshi)).build()
             .create(BreweryService::class.java)
 
         // Create the repository
@@ -128,8 +128,8 @@ class BreweryRepositoryImplTest {
         assertEquals(expectedBrewery, localBrewery)
     }
 
-  /*  @Test
-    fun getBreweriesStream_returnsPagingData() = runBlockingTest {
+ /*   @Test
+    fun getBreweriesStream_returnsPagingData() = runTest {
         // Given
         val breweryType = "micro"
         val breweries = listOf(
@@ -150,8 +150,7 @@ class BreweryRepositoryImplTest {
                 website_url = null,
                 state = "State",
                 street = "Street"
-            ),
-            Brewery(
+            ), Brewery(
                 id = "2",
                 name = "Brewery Two",
                 brewery_type = breweryType,
@@ -174,19 +173,34 @@ class BreweryRepositoryImplTest {
         // Mock the API and local response
         breweries.forEach { breweryDao.insertBrewery(it) }
 
-        // When
-        val pagingData = repository.getBreweriesStream(breweryType).first()
 
-        // Convert PagingData to a list
-        val items = mutableListOf<Brewery>()
-
-        // Collect the PagingData
-        pagingData.collect { page ->
-            items.addAll(page)
+        val breweryCacheDao: BreweryCacheDao = mock(BreweryCacheDao::class.java)
+        `when`(
+            breweryCacheDao.getLastUpdated(anyInt(), anyString())
+        ).then {
+            0
         }
 
+        val breweryPagingSource = BreweryPagingSource(
+            breweryDao = breweryDao,
+            breweryCacheDao = breweryCacheDao,
+            apiService = breweryService,
+            breweryType = "micro"
+        )
+
+        // Define parameters for refreshing/loading the initial page
+        val params = PagingSource.LoadParams.Refresh(
+            key = 0, // Start from the first page
+            loadSize = 1, placeholdersEnabled = false
+        )
+
+        val actual = breweryPagingSource.load(params)
+
+
         // Then
-        assertEquals(2, items.size) // Check if we received two items
-        assertTrue(items.containsAll(breweries)) // Check if all breweries are included
+        assertEquals(2, items?.size) // Check if we received two items
+        if (items != null) {
+            assertTrue(items.containsAll(breweries))
+        } // Check if all breweries are included
     }*/
 }

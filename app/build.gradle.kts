@@ -219,13 +219,18 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
 
     // Coroutine testing
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 
     //paging
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.common.ktx)
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4") // Replace with your version
+
+    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    androidTestImplementation("org.mockito:mockito-core:5.12.0")
+    androidTestImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
 
 
 }
