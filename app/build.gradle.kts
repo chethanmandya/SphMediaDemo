@@ -113,6 +113,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui)
     implementation(libs.androidx.compose.ui.ui.tooling.preview)
 
+    // compose paging
+    implementation(libs.androidx.paging.compose)
+
 
     // Work manager
     implementation(libs.androidx.work)
@@ -132,8 +135,6 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.material3.android)
-    implementation(libs.androidx.paging.common.android)
-    implementation(libs.androidx.paging.compose.android)
     testImplementation(libs.androidx.test.junit)
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
@@ -220,8 +221,11 @@ dependencies {
     // Coroutine testing
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
-    implementation("androidx.paging:paging-runtime:3.3.2")
-    testImplementation("androidx.paging:paging-testing:3.3.2")
+    //paging
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.common.ktx)
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4") // Replace with your version
 
 
 }

@@ -62,7 +62,6 @@ dependencies {
 
     // Hilt
     implementation(libs.google.dagger.hilt.android)
-    implementation(libs.androidx.paging.common.android)
     ksp(libs.google.dagger.hilt.android.compiler)
 
     // Timber
@@ -78,6 +77,10 @@ dependencies {
     // LiveData
     implementation(libs.androidx.livedata)
     implementation(libs.androidx.lifecycle.livedata.ktx)
+
+    //paging
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.common.ktx)
 
 
 }
