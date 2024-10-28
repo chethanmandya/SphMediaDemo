@@ -50,9 +50,7 @@ class MainActivity : ComponentActivity() {
                     ) {
 
                         composable(MainDestinations.BREWERY_LIST) {
-                            BreweryListScreen { itemId ->
-                                navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${itemId}")
-                            }
+                            BreweryListScreen(navController)
                         }
 
                         composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->

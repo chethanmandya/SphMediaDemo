@@ -1,9 +1,7 @@
 package com.sph.sphmedia.ui.brewery
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
@@ -33,11 +32,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.sph.sphmedia.R
 import com.sph.sphmedia.ui.theme.rotatingProgressBarColor
+import com.sphmedia.common.MainDestinations
 import com.sphmedia.data.model.Brewery
 import kotlinx.coroutines.launch
 
@@ -61,8 +62,7 @@ enum class BreweryTypeTab(@StringRes val titleResourceId: Int) {
 
 @Composable
 fun BreweryListScreen(
-    viewModel: BreweryListViewModel = hiltViewModel(),
-    openBreweryDetail: (breweryId: String) -> Unit
+    navController: NavController, viewModel: BreweryListViewModel = hiltViewModel()
 ) {
     val tabList = remember { BreweryTypeTab.entries.toTypedArray() }
     val coroutineScope = rememberCoroutineScope()
@@ -83,7 +83,7 @@ fun BreweryListScreen(
             val breweryType = tabList[pageIndex].name.lowercase()
             val lazyPagingItems = viewModel.getOrCreatePager(breweryType).collectAsLazyPagingItems()
 
-            BreweryLazyColumn(lazyPagingItems, openBreweryDetail)
+            BreweryLazyColumn(lazyPagingItems, navController)
         }
     }
 }
@@ -104,21 +104,21 @@ fun BreweryTabRow(
 
 @Composable
 fun BreweryLazyColumn(
-    lazyPagingItems: LazyPagingItems<Brewery>, openBreweryDetail: (breweryId: String) -> Unit
+    lazyPagingItems: LazyPagingItems<Brewery>, navController: NavController
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
+
+        LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
             when (lazyPagingItems.loadState.refresh) {
                 is LoadState.Loading -> item { /* Leave empty to avoid duplicating indicator */ }
                 else -> {
-                    items(
-                        key = { index -> lazyPagingItems[index]?.id ?: "" },
-                        count = lazyPagingItems.itemCount
-                    ) { index ->
-                        lazyPagingItems[index]?.let { item ->
-                            BreweryItem(item, onClick = { openBreweryDetail(item.id) })
+                    items(count = lazyPagingItems.itemCount,
+                        key = { index -> lazyPagingItems[index]?.id ?: index }) { index ->
+                        val item = lazyPagingItems[index]
+                        if (item != null) {
+                            BreweryItem(brewery = item) {
+                                navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${item.id}")
+                            }
                         }
                     }
                 }
@@ -138,8 +138,7 @@ fun BreweryLazyColumn(
 @Composable
 fun FullScreenLoadingIndicator() {
     Box(
-        modifier = Modifier
-            .fillMaxSize(), // Optional dimmed background
+        modifier = Modifier.fillMaxSize(), // Optional dimmed background
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(color = rotatingProgressBarColor)
