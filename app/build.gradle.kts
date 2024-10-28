@@ -1,10 +1,10 @@
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
 }
-
 
 android {
     namespace = "com.sph.sphmedia"
@@ -18,20 +18,12 @@ android {
         versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-
+        vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "APPLICATION_BASE_URL", "https://api.openbrewerydb.org/")
-
     }
 
-
-
-
     buildTypes {
-        // 'release' build type configuration
-        getByName("release") {
+        release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -39,21 +31,19 @@ android {
                 "retrofit2.pro",
                 "gson.pro",
                 "okhttp3.pro",
-                "firebase-crashlytics.pro",
+                "firebase-crashlytics.pro"
             )
             signingConfig = signingConfigs.getByName("debug")
             buildConfigField("String", "APPLICATION_BASE_URL", "\"https://api.openbrewerydb.org/\"")
         }
 
-        // 'debug' build type configuration
-        getByName("debug") {
+        debug {
             isMinifyEnabled = false
             isShrinkResources = false
             enableUnitTestCoverage = true
             buildConfigField("String", "APPLICATION_BASE_URL", "\"https://api.openbrewerydb.org/\"")
         }
 
-        // 'stg' (staging) build type configuration
         create("stg") {
             isMinifyEnabled = false
             isShrinkResources = false
@@ -62,11 +52,8 @@ android {
     }
 
     testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
+        unitTests.isIncludeAndroidResources = true
     }
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -75,9 +62,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
-        freeCompilerArgs = freeCompilerArgs.toMutableList().apply {
-            add("-opt-in=kotlin.RequiresOptIn")
-        }
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
 
     buildFeatures {
@@ -90,148 +75,103 @@ android {
     }
 
     packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+        resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
 }
 
 dependencies {
-
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+    // Project modules
     implementation(project(":data"))
     implementation(project(":domain"))
     implementation(project(":common"))
 
-    // Core
+    // Core dependencies
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
     implementation(libs.androidx.core)
-
-    // Activity
     implementation(libs.androidx.activity.compose)
-
-    // Compose ui
     implementation(libs.androidx.compose.ui.ui)
     implementation(libs.androidx.compose.ui.ui.tooling.preview)
 
-    // compose paging
+    // Compose and UI components
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.google.accompanist.systemUiController)
+    implementation(libs.accompanist.flowlayout.v0300)
 
-
-    // Work manager
+    // AndroidX & WorkManager
     implementation(libs.androidx.work)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.material3.android)
 
-    // Coroutine
+    // Coroutine libraries
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    // Retrofit
+    // Networking (Retrofit and OkHttp)
     implementation(libs.bundles.retrofit2)
-
-    // Okhttp
     implementation(libs.okhttp3)
     implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.retrofit2)
+    implementation(libs.converter.moshi)
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
 
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.material3.android)
-    testImplementation(libs.androidx.test.junit)
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
+    androidTestImplementation(libs.androidx.room.testing)
 
-
-    androidTestImplementation("androidx.room:room-testing:2.5.2")
-
-
-    // Hilt
+    // Hilt and Dagger
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.hilt.work)
     implementation(libs.google.dagger.hilt.android)
     ksp(libs.google.dagger.hilt.android.compiler)
 
+    // Lifecycle and ViewModel
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.livedata)
+
     // Navigation
     implementation(libs.androidx.navigation)
 
-    // Lifecycle
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-
-    // ViewModel
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-    // LiveData
-    implementation(libs.androidx.livedata)
-
-    // Gson
+    // Utility libraries
     implementation(libs.google.gson)
-
-    // Timber
     implementation(libs.timber)
-
-    // DataStore
-    implementation(libs.androidx.datastore.preferences)
-
-    // fonts
     implementation(libs.androidx.ui.text.google.fonts)
 
-    implementation(libs.accompanist.flowlayout.v0300)
-
-    // Constrain layout
-    implementation(libs.androidx.constraintlayout.compose) // Add this line
-
-    implementation(libs.accompanist.systemuicontroller.v0280)
-
-
+    // Material and UI libraries
     implementation(libs.material.v190)
 
+    // Test dependencies
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.androidx.runner)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.junit.ktx)
 
-
-
-
-
-
-    testImplementation("app.cash.turbine:turbine:0.12.1")
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("com.google.truth:truth:1.1.5")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    testImplementation("androidx.arch.core:core-testing:2.2.0")
-    testImplementation("io.mockk:mockk:1.13.5")
-    testImplementation("androidx.test:runner:1.5.2")
-    testImplementation("org.robolectric:robolectric:4.10.3")
-    testImplementation("androidx.test.ext:junit-ktx:1.1.5")
-
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
-
-// Retrofit components
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-
-    implementation("com.squareup.moshi:moshi:1.15.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.ui.test.junit4.v174)
+    debugImplementation(libs.androidx.ui.tooling.v174)
+    debugImplementation(libs.androidx.ui.test.manifest.v154)
 
     // MockWebServer for testing
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
+    testImplementation(libs.mockwebserver)
 
-    // Coroutine testing
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
-
-    //paging
+    // Paging
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.common.ktx)
 
-
-    testImplementation("org.mockito:mockito-core:5.12.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    androidTestImplementation("org.mockito:mockito-core:5.12.0")
-    androidTestImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-
-
-
+    // Mockito for testing
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockito.core)
+    androidTestImplementation(libs.mockito.kotlin)
 }
-
