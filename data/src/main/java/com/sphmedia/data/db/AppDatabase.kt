@@ -12,8 +12,8 @@ import com.sphmedia.data.model.BreweryCache
 )
 
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun BreweryDao(): BreweryDao
-    abstract fun BreweryCacheDao(): BreweryCacheDao
+    abstract fun breweryDao(): BreweryDao
+    abstract fun breweryCacheDao(): BreweryCacheDao
 }
 
 

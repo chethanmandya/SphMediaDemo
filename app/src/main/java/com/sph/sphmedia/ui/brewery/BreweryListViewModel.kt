@@ -2,8 +2,6 @@ package com.sph.sphmedia.ui.brewery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.sphmedia.data.model.Brewery
@@ -36,8 +34,7 @@ class BreweryListViewModel @Inject constructor(
 
     fun getOrCreatePager(type: String): Flow<PagingData<Brewery>> {
         return pagerMap.getOrPut(type) {
-            Pager(config = PagingConfig(pageSize = 20),
-                pagingSourceFactory = { breweryRepository.getBreweriesStream(type) }).flow.cachedIn(
+            breweryRepository.getBreweriesStream(type).cachedIn(
                 viewModelScope
             )
         }

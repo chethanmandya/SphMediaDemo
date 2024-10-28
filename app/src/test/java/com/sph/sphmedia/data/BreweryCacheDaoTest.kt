@@ -36,7 +36,7 @@ class BreweryCacheDaoTest {
             AppDatabase::class.java // Specify your database class
         ).build()
         // Access the BreweryCacheDao from the database instance
-        dao = db.BreweryCacheDao()
+        dao = db.breweryCacheDao()
     }
 
     /**

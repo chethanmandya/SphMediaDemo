@@ -47,13 +47,13 @@ class AppModule {
     @Singleton
     @Provides
     fun provideBreweryDao(db: AppDatabase): BreweryDao {
-        return db.BreweryDao()
+        return db.breweryDao()
     }
 
     @Singleton
     @Provides
     fun provideBreweryCacheDao(db: AppDatabase): BreweryCacheDao {
-        return db.BreweryCacheDao()
+        return db.breweryCacheDao()
     }
 
     /**
