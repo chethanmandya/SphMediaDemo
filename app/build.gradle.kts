@@ -67,6 +67,7 @@ android {
         }
     }
 
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -133,8 +134,13 @@ dependencies {
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.paging.common.android)
     implementation(libs.androidx.paging.compose.android)
+    testImplementation(libs.androidx.test.junit)
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
+
+
+    androidTestImplementation("androidx.room:room-testing:2.5.2")
+
 
     // Hilt
     implementation(libs.androidx.hilt.navigation.compose)
@@ -179,31 +185,24 @@ dependencies {
     implementation(libs.material.v190)
 
 
-    testImplementation(libs.junit.v412)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.all)
-    testImplementation(libs.mockito.android)
-    testImplementation(libs.androidx.core.testing)
-
-
-    androidTestImplementation(libs.core)
-    androidTestImplementation(libs.androidx.junit.v111)
-    androidTestImplementation(libs.runner)
-    androidTestImplementation(libs.rules)
-
-
-    androidTestImplementation(libs.androidx.test.espresso)
-    androidTestImplementation(libs.androidx.espresso.contrib)
-    androidTestImplementation(libs.espresso.intents)
-
-    androidTestImplementation(libs.androidx.core.runtime)
-    androidTestImplementation(libs.androidx.core.testing)
-
-
-    androidTestImplementation(libs.mockito.core)
-    androidTestImplementation(libs.mockito.all)
-    androidTestImplementation(libs.mockito.android)
 
 
 
+
+
+    testImplementation("app.cash.turbine:turbine:0.12.1")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("com.google.truth:truth:1.1.5")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("androidx.test:runner:1.5.2")
+    testImplementation("org.robolectric:robolectric:4.10.3")
+    testImplementation("androidx.test.ext:junit-ktx:1.1.5")
+
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
 }
+
