@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -103,12 +104,21 @@ fun BreweryTabRow(
 }
 
 @Composable
+fun getColumnCountForDevice(): Int {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    return if (screenWidthDp < 600) 2 else 4 // 600dp threshold for tablet
+}
+
+@Composable
 fun BreweryLazyColumn(
     lazyPagingItems: LazyPagingItems<Brewery>, navController: NavController
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
 
-        LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(getColumnCountForDevice()),
+            modifier = Modifier.fillMaxSize()
+        ) {
             when (lazyPagingItems.loadState.refresh) {
                 is LoadState.Loading -> item { /* Leave empty to avoid duplicating indicator */ }
                 else -> {
