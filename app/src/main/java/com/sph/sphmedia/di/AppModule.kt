@@ -3,13 +3,9 @@ package com.sph.sphmedia.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.room.Room
 import com.byjus.common.network.NetworkManager
 import com.sph.sphmedia.BuildConfig.APPLICATION_BASE_URL
 import com.sphmedia.data.api.BreweryService
-import com.sphmedia.data.db.AppDatabase
-import com.sphmedia.data.db.BreweryCacheDao
-import com.sphmedia.data.db.BreweryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +25,7 @@ class AppModule {
     @Provides
     fun providesContext(application: Application): Context = application.applicationContext
 
+
     @Singleton
     @Provides
     fun provideGithubService(okHttpClient: OkHttpClient): BreweryService {
@@ -37,24 +34,6 @@ class AppModule {
         return retrofit.create(BreweryService::class.java)
     }
 
-    @Singleton
-    @Provides
-    fun provideDb(app: Application): AppDatabase {
-        return Room.databaseBuilder(app, AppDatabase::class.java, "SPHMedia.db")
-            .fallbackToDestructiveMigration().build()
-    }
-
-    @Singleton
-    @Provides
-    fun provideBreweryDao(db: AppDatabase): BreweryDao {
-        return db.breweryDao()
-    }
-
-    @Singleton
-    @Provides
-    fun provideBreweryCacheDao(db: AppDatabase): BreweryCacheDao {
-        return db.breweryCacheDao()
-    }
 
     /**
      * OkHttpClient
