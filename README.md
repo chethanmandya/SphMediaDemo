@@ -68,6 +68,11 @@ The app leverages several modern Android components and libraries:
 This app is designed following best practices in state management and responsiveness, using **ViewModel** and **rememberSaveable** for state persistence. With its modularized architecture, it maintains separation of concerns and ease of testing.
 
 ### Compose State Management
+Managing state in Android, especially with Jetpack Compose, can be challenging. While Compose offers powerful features, it has some limitations, including an issue with pagination not retaining scroll position when navigating to a detail screen and returning to the list. This is a known bug in the framework (see [Google issue tracker](https://issuetracker.google.com/issues/177245496)).
+
+A common workaround involves using `rememberLazyGridState`, but even this fails to preserve scroll position, causing the list to reset to the top when revisiting. This behavior can disrupt user experience, as they lose their place within the list.
+
+The currently recommended approach is to use `cacheIn(viewModel)` for the pagination flow. By caching data at the ViewModel level, the scroll position remains unaffected, as Compose reuses the cached data and restores the previous scroll state seamlessly. This approach ensures that even after navigating away, users return to the exact scroll position, regardless of list length. You can take look at BreweryListViewModel , the same solution adopted. 
 
 ### Screen shots / Video's
 
