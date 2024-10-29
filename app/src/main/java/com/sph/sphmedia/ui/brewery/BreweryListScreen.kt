@@ -119,14 +119,13 @@ fun BreweryLazyColumn(
     Box(modifier = Modifier.fillMaxSize()) {
 
         LazyVerticalGrid(columns = GridCells.Fixed(getColumnCountForDevice()),
-            modifier = Modifier
+            modifier = Modifier.testTag("LazyVerticalGrid_$breweryType")
                 .fillMaxSize()
                 .semantics { contentDescription = breweryType }) {
             when (lazyPagingItems.loadState.refresh) {
                 is LoadState.Loading -> item { /* Leave empty to avoid duplicating indicator */ }
                 else -> {
-                    items(count = lazyPagingItems.itemCount,
-                        key = { index -> lazyPagingItems[index]?.id ?: index }) { index ->
+                    items(count = lazyPagingItems.itemCount) { index ->
                         val item = lazyPagingItems[index]
                         if (item != null) {
                             BreweryItem(brewery = item, position = index) {
@@ -162,7 +161,7 @@ fun FullScreenLoadingIndicator() {
 fun PagingLoadingIndicator() {
     CircularProgressIndicator(
         color = rotatingProgressBarColor,
-        modifier = Modifier
+        modifier = Modifier.testTag("circularProgressBar")
             .fillMaxWidth()
             .wrapContentWidth(Alignment.CenterHorizontally)
     )

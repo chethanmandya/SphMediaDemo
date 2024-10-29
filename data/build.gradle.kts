@@ -60,7 +60,7 @@ dependencies {
 
 
 
-    implementation("androidx.compose.runtime:runtime-livedata:1.5.1")
+    implementation(libs.androidx.runtime.livedata)
 
     // Hilt
     implementation(libs.google.dagger.hilt.android)

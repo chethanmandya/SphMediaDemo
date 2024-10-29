@@ -59,7 +59,7 @@ dependencies {
 
 
 
-    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     //paging
     implementation(libs.androidx.paging.runtime.ktx)

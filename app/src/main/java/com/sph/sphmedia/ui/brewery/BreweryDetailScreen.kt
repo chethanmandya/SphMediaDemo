@@ -24,11 +24,11 @@ fun BreweryDetailScreen(breweryId: String) {
     viewModel.getBreweryById(breweryId) // Replace with your actual fetching logic
     val brewery by viewModel.brewery.observeAsState()
 
-    Box(modifier = Modifier.fillMaxSize().testTag("name_of_the_brewery_detail")) {
+    Box(modifier = Modifier.fillMaxSize()) {
         // Display the brewery details
         brewery?.let {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.testTag("name_of_the_brewery_detail").padding(16.dp)
             ) {
                 Text(
                     text = it.name,
