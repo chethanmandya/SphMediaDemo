@@ -6,4 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.google.hilt) apply false
     alias(libs.plugins.google.ksp) apply false
+    alias(libs.plugins.compose) apply false
 }
+
+

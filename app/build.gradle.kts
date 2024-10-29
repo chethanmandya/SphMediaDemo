@@ -1,9 +1,10 @@
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
+    alias(libs.plugins.compose)
+    id("org.jetbrains.kotlin.kapt") // Apply the KAPT plugin
 }
 
 android {
@@ -11,13 +12,14 @@ android {
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
+
         applicationId = "com.sph.sphmedia"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
+        testInstrumentationRunner = "com.sph.sphmedia.app.CustomTestRunner"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "APPLICATION_BASE_URL", "https://api.openbrewerydb.org/")
     }
@@ -87,32 +89,81 @@ dependencies {
 
     // Core dependencies
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
-    implementation(libs.androidx.core)
+
+
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.android)
+
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.material.iconsExtended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.materialWindow)
+    implementation(libs.androidx.compose.runtime.livedata)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+
+    implementation(libs.accompanist.swiperefresh)
+    implementation(libs.accompanist.systemuicontroller)
+
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.ui.ui)
-    implementation(libs.androidx.compose.ui.ui.tooling.preview)
+    implementation(libs.material)
 
-    // Compose and UI components
-    implementation(libs.androidx.paging.compose)
-    implementation(libs.androidx.constraintlayout.compose)
-    implementation(libs.google.accompanist.systemUiController)
-    implementation(libs.accompanist.flowlayout.v0300)
+    implementation(libs.androidx.glance)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
 
-    // AndroidX & WorkManager
-    implementation(libs.androidx.work)
-    implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.viewModelCompose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.window)
+
+    // instrumentation test
+    testImplementation(libs.junit)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.runner)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockwebserver.v4110)
+    testImplementation(libs.converter.moshi.v2110)
+    testImplementation(libs.moshi.kotlin)
+
+
+    // UI testing
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.compose.ui.test)
+    // Hilt Android Testing dependencies
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.6.0")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.0-alpha01")
+    androidTestImplementation(libs.androidx.test.ext.junit)
+
+
 
     // Coroutine libraries
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+
     // Networking (Retrofit and OkHttp)
-    implementation(libs.bundles.retrofit2)
+
     implementation(libs.okhttp3)
-    implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.okhttp3.logging)
+    implementation(libs.retrofit2.converter.gson)
     implementation(libs.retrofit2)
-    implementation(libs.converter.moshi)
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
 
@@ -129,49 +180,28 @@ dependencies {
     implementation(libs.google.dagger.hilt.android)
     ksp(libs.google.dagger.hilt.android.compiler)
 
-    // Lifecycle and ViewModel
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.livedata)
 
-    // Navigation
-    implementation(libs.androidx.navigation)
 
-    // Utility libraries
-    implementation(libs.google.gson)
-    implementation(libs.timber)
-    implementation(libs.androidx.ui.text.google.fonts)
 
-    // Material and UI libraries
-    implementation(libs.material.v190)
 
-    // Test dependencies
-    testImplementation(libs.junit)
-    testImplementation(libs.truth)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.androidx.core.testing)
-    testImplementation(libs.mockk)
-    testImplementation(libs.androidx.runner)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.androidx.junit.ktx)
-
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.ui.test.junit4.v174)
-    debugImplementation(libs.androidx.ui.tooling.v174)
-    debugImplementation(libs.androidx.ui.test.manifest.v154)
-
-    // MockWebServer for testing
-    testImplementation(libs.mockwebserver)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.work)
+    implementation(libs.google.dagger.hilt.android)
+    ksp(libs.google.dagger.hilt.android.compiler)
 
     // Paging
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.common.ktx)
+    implementation(libs.androidx.paging.compose)
+
+    // Timber
+    implementation(libs.timber)
 
     // Mockito for testing
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.mockito.core)
     androidTestImplementation(libs.mockito.kotlin)
+
+
 }

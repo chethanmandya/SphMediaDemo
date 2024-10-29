@@ -14,7 +14,7 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.sph.sphmedia.app.CustomTestRunner"
     }
 
     buildTypes {
@@ -63,17 +63,19 @@ dependencies {
     implementation(libs.timber)
 
     // Retrofit
-    implementation(libs.bundles.retrofit2)
+    implementation(libs.retrofit2)
 
     // OkHttp
     implementation(libs.okhttp3)
-    implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.okhttp3.logging)
+    implementation(libs.google.gson)
+    implementation(libs.timber)
 
-    // LiveData
-    implementation(libs.androidx.livedata)
 
     // Room
     implementation(libs.androidx.room.runtime)
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
+
+
 }

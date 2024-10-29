@@ -8,14 +8,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -36,33 +35,33 @@ class MainActivity : ComponentActivity() {
             SPHMediaTheme {
                 val navController = rememberNavController()
                 FullScreenEffect()
-                Scaffold { innerPaddingModifier ->
-                    val newPadding = PaddingValues(
-                        start = innerPaddingModifier.calculateStartPadding(LocalLayoutDirection.current),
-                        end = innerPaddingModifier.calculateEndPadding(LocalLayoutDirection.current),
-                        top = innerPaddingModifier.calculateTopPadding(),
-                        bottom = 0.dp,
-                    )
-                    NavHost(
-                        navController = navController,
-                        startDestination = MainDestinations.BREWERY_LIST,
-                        modifier = Modifier.padding(newPadding),
-                    ) {
-
-                        composable(MainDestinations.BREWERY_LIST) {
-                            BreweryListScreen(navController)
-                        }
-
-                        composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->
-                            BreweryDetailScreen(
-                                navController,
-                                backStackEntry.arguments?.getString("breweryId") ?: ""
-                            )
-                        }
-
-                    }
+                Scaffold {
+                    AppNavHost(navController)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AppNavHost(navController: NavHostController) {
+    NavHost(
+        navController = navController, startDestination = "brewery_list"
+    ) {
+        /**
+         * We are not going to pass the navController parameter to compose function,
+         * Decouple the navigation code from your composable destinations to enable testing each composable in isolation
+         * read more here - https://developer.android.com/develop/ui/compose/navigation#testing
+         */
+        composable(MainDestinations.BREWERY_LIST) {
+            BreweryListScreen { breweryItem ->
+                navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${breweryItem.id}")
+            }
+        }
+        composable("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/{${MainDestinations.BREWERY_ID_KEY}}") { backStackEntry ->
+            BreweryDetailScreen(
+                backStackEntry.arguments?.getString("breweryId") ?: ""
+            )
         }
     }
 }

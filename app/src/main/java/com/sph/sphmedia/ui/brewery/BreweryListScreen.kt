@@ -29,7 +29,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -63,7 +66,7 @@ enum class BreweryTypeTab(@StringRes val titleResourceId: Int) {
 
 @Composable
 fun BreweryListScreen(
-    navController: NavController, viewModel: BreweryListViewModel = hiltViewModel()
+     viewModel: BreweryListViewModel = hiltViewModel(), navigateToDetailScreen : (Brewery) -> Unit
 ) {
     val tabList = remember { BreweryTypeTab.entries.toTypedArray() }
     val coroutineScope = rememberCoroutineScope()
@@ -84,7 +87,7 @@ fun BreweryListScreen(
             val breweryType = tabList[pageIndex].name.lowercase()
             val lazyPagingItems = viewModel.getOrCreatePager(breweryType).collectAsLazyPagingItems()
 
-            BreweryLazyColumn(lazyPagingItems, navController)
+            BreweryLazyColumn(breweryType, lazyPagingItems, navigateToDetailScreen)
         }
     }
 }
@@ -111,14 +114,14 @@ fun getColumnCountForDevice(): Int {
 
 @Composable
 fun BreweryLazyColumn(
-    lazyPagingItems: LazyPagingItems<Brewery>, navController: NavController
+    breweryType: String, lazyPagingItems: LazyPagingItems<Brewery>, navigateToDetailScreen : (Brewery) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(getColumnCountForDevice()),
-            modifier = Modifier.fillMaxSize()
-        ) {
+        LazyVerticalGrid(columns = GridCells.Fixed(getColumnCountForDevice()),
+            modifier = Modifier
+                .fillMaxSize()
+                .semantics { contentDescription = breweryType }) {
             when (lazyPagingItems.loadState.refresh) {
                 is LoadState.Loading -> item { /* Leave empty to avoid duplicating indicator */ }
                 else -> {
@@ -126,8 +129,8 @@ fun BreweryLazyColumn(
                         key = { index -> lazyPagingItems[index]?.id ?: index }) { index ->
                         val item = lazyPagingItems[index]
                         if (item != null) {
-                            BreweryItem(brewery = item) {
-                                navController.navigate("${MainDestinations.BREWERY_LIST_DETAIL_ROUTE}/${item.id}")
+                            BreweryItem(brewery = item, position = index) {
+                                navigateToDetailScreen(item)
                             }
                         }
                     }
@@ -167,7 +170,7 @@ fun PagingLoadingIndicator() {
 
 
 @Composable
-fun BreweryItem(brewery: Brewery, onClick: () -> Unit) {
+fun BreweryItem(brewery: Brewery, position: Int, onClick: () -> Unit) {
 
     ElevatedCard(elevation = CardDefaults.cardElevation(
         defaultElevation = 6.dp
@@ -181,7 +184,9 @@ fun BreweryItem(brewery: Brewery, onClick: () -> Unit) {
             .wrapContentHeight()) {
 
         Column(
-            modifier = Modifier
+            modifier = Modifier.testTag(
+                    "name_of_the_brewery_" + brewery.brewery_type + "_" + position
+                    )
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clickable { onClick() },

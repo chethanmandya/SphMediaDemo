@@ -14,7 +14,7 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.sph.sphmedia.app.CustomTestRunner"
     }
 
     buildTypes {
@@ -58,6 +58,10 @@ dependencies {
     implementation(project(":common"))
 
 
+
+
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.1")
+
     // Hilt
     implementation(libs.google.dagger.hilt.android)
     ksp(libs.google.dagger.hilt.android.compiler)
@@ -66,14 +70,15 @@ dependencies {
     implementation(libs.timber)
 
     // Retrofit
-    implementation(libs.bundles.retrofit2)
+    implementation(libs.retrofit2)
 
     // OkHttp
     implementation(libs.okhttp3)
-    implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.okhttp3.logging)
 
     // LiveData
-    implementation(libs.androidx.livedata)
+    implementation(libs.androidx.compose.runtime.livedata)
+
 
     // Room
     implementation(libs.androidx.room.runtime)

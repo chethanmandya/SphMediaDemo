@@ -14,7 +14,7 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.sph.sphmedia.app.CustomTestRunner"
     }
 
     buildTypes {
@@ -59,6 +59,12 @@ dependencies {
 
 
 
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+
+    //paging
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.common.ktx)
+
 
     // Hilt
     implementation(libs.google.dagger.hilt.android)
@@ -68,19 +74,20 @@ dependencies {
     implementation(libs.timber)
 
     // Retrofit
-    implementation(libs.bundles.retrofit2)
+    implementation(libs.retrofit2)
 
     // OkHttp
     implementation(libs.okhttp3)
-    implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.okhttp3.logging)
 
     // LiveData
-    implementation(libs.androidx.livedata)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.compose.runtime.livedata)
 
-    //paging
-    implementation(libs.androidx.paging.runtime.ktx)
-    implementation(libs.androidx.paging.common.ktx)
+    // Room
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
+
 
 
 }

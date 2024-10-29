@@ -106,7 +106,11 @@ class BreweryCacheDaoTest {
     fun insert_duplicateEntries_shouldUpdateLastUpdated() = runBlocking {
         // Arrange: Create two cache entries for the same page and type
         val cacheEntry1 = BreweryCache(pageNumber = 1, breweryType = "micro", lastUpdated = 1000L)
-        val cacheEntry2 = BreweryCache(pageNumber = 1, breweryType = "micro", lastUpdated = 2000L) // Same page and type
+        val cacheEntry2 = BreweryCache(
+            pageNumber = 1,
+            breweryType = "micro",
+            lastUpdated = 2000L
+        ) // Same page and type
 
         // Act: Insert the first entry and then the duplicate entry (which should update the timestamp)
         dao.insert(cacheEntry1)
@@ -163,8 +167,18 @@ class BreweryCacheDaoTest {
         dao.clearCacheByType("micro")
 
         // Assert: Verify that both entries have been cleared
-        assertNull(dao.getLastUpdated(page = 1, breweryType = "micro")) // First page should be cleared
-        assertNull(dao.getLastUpdated(page = 2, breweryType = "micro")) // Second page should be cleared
+        assertNull(
+            dao.getLastUpdated(
+                page = 1,
+                breweryType = "micro"
+            )
+        ) // First page should be cleared
+        assertNull(
+            dao.getLastUpdated(
+                page = 2,
+                breweryType = "micro"
+            )
+        ) // Second page should be cleared
     }
 
     /**
@@ -183,7 +197,8 @@ class BreweryCacheDaoTest {
         dao.insert(cacheEntry3)
 
         // Act: Retrieve the count of entries for "micro" brewery type manually
-        val microEntries = listOf(dao.getLastUpdated(1, "micro"), dao.getLastUpdated(2, "micro")).filterNotNull()
+        val microEntries =
+            listOf(dao.getLastUpdated(1, "micro"), dao.getLastUpdated(2, "micro")).filterNotNull()
         val nanoEntries = listOf(dao.getLastUpdated(1, "nano")).filterNotNull()
 
         // Assert: Verify the counts are as expected

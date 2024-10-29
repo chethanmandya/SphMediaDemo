@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,13 +18,13 @@ import androidx.navigation.NavController
 
 
 @Composable
-fun BreweryDetailScreen(navController: NavController, breweryId: String) {
+fun BreweryDetailScreen(breweryId: String) {
     // Use your ViewModel to get the brewery details based on breweryId
     val viewModel: BreweryDetailViewModel = hiltViewModel()
     viewModel.getBreweryById(breweryId) // Replace with your actual fetching logic
     val brewery by viewModel.brewery.observeAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().testTag("name_of_the_brewery_detail")) {
         // Display the brewery details
         brewery?.let {
             Column(
