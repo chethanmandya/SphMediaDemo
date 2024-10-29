@@ -105,7 +105,7 @@ class BreweryListTests {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun clickGridItem_navigateToDetail_verifyName() {
+    fun click_lazy_gridItem_to_navigate_to_detail_screen_verifyName() {
         composeTestRule.activity.setContent {
             navController = TestNavHostController(LocalContext.current)
             navController.navigatorProvider.addNavigator(ComposeNavigator())
@@ -155,7 +155,7 @@ class BreweryListTests {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun scrollGridAndCheckProgressBar() {
+    fun scroll_lazy_grid_and_check_for_loading_progressBar() {
         composeTestRule.activity.setContent {
             navController = TestNavHostController(LocalContext.current)
             navController.navigatorProvider.addNavigator(ComposeNavigator())
