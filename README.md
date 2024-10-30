@@ -25,7 +25,7 @@ The following requirements are implemented:
 The app leverages several modern Android components and libraries:
 
 - **UI Components**:
-- **paging-compose**
+- **Paging-compose**
       `Paging-compose` efficiently loads large data sets in chunks, reducing memory usage and improving performance. It integrates with ViewModel to ensure data survives configuration changes and supports automatic updates as users scroll.
 
 - **LazyVerticalGrid for ListView**
