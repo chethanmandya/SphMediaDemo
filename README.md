@@ -64,10 +64,11 @@ The app leverages several modern Android components and libraries:
 
 - **UI Testing (Instrumentation)**:
     - **Android UI Testing APIs**: For testing Jetpack Compose UI interactions
-
-This app is designed following best practices in state management and responsiveness, using **ViewModel** and **rememberSaveable** for state persistence. With its modularized architecture, it maintains separation of concerns and ease of testing.
+Please NOTE : emulator must connect to Internet while running UI test case . 
 
 ### Compose State Management
+This app is designed following best practices in state management and responsiveness, using **ViewModel** and **rememberSaveable** for state persistence. With its modularized architecture, it maintains separation of concerns and ease of testing.
+
 Managing state in Android, especially with Jetpack Compose, can be challenging. While Compose offers powerful features, it has some limitations, including an issue with pagination not retaining scroll position when navigating to a detail screen and returning to the list. This is a known bug in the framework (see [Google issue tracker](https://issuetracker.google.com/issues/177245496)).
 
 A common workaround involves using `rememberLazyGridState`, but even this fails to preserve scroll position, causing the list to reset to the top when revisiting. This behavior can disrupt user experience, as they lose their place within the list.
