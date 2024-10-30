@@ -28,7 +28,7 @@ The app leverages several modern Android components and libraries:
 - **paging-compose**
       `Paging-compose` efficiently loads large data sets in chunks, reducing memory usage and improving performance. It integrates with ViewModel to ensure data survives configuration changes and supports automatic updates as users scroll.
 
-- **LazyVerticalGrid for Scrolling**
+- **LazyVerticalGrid for ListView**
   `LazyVerticalGrid` creates a vertically scrolling grid layout, similar to RecyclerView, optimizing item composition for performance. It allows customizable item layouts and supports dynamic sizing for adaptable UI design.
 
 - **HorizontalPaging**
