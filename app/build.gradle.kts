@@ -19,10 +19,10 @@ android {
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
         testInstrumentationRunner = "com.sph.sphmedia.app.CustomTestRunner"
-
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "APPLICATION_BASE_URL", "https://api.openbrewerydb.org/")
     }
+
 
     buildTypes {
         release {
@@ -55,6 +55,7 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        unitTests.isReturnDefaultValues = true
     }
 
     compileOptions {
@@ -139,6 +140,9 @@ dependencies {
     testImplementation(libs.mockwebserver.v4110)
     testImplementation(libs.converter.moshi.v2110)
     testImplementation(libs.moshi.kotlin)
+    testImplementation(libs.turbine)
+    testImplementation(libs.androidx.paging.testing)
+    testImplementation(libs.mockito.core.v480)
 
 
     // UI testing

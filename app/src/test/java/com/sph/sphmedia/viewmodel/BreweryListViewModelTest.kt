@@ -1,14 +1,15 @@
-package com.sph.sphmedia.ui.brewery
+package com.sph.sphmedia.viewmodel
 
+import androidx.paging.AsyncPagingDataDiffer
 import androidx.paging.PagingData
-import androidx.paging.map
-import com.sph.sphmedia.toList
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListUpdateCallback
+import com.sph.sphmedia.ui.brewery.BreweryListViewModel
 import com.sphmedia.data.model.Brewery
 import com.sphmedia.domain.repository.BreweryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -23,11 +24,11 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
-class BreweryListViewModelTest {
+class
+BreweryListViewModelTest {
 
     private lateinit var viewModel: BreweryListViewModel
     private lateinit var breweryRepository: BreweryRepository
@@ -49,15 +50,43 @@ class BreweryListViewModelTest {
         Dispatchers.resetMain() // Reset the dispatcher
     }
 
+    private val noopListUpdateCallback = object : ListUpdateCallback {
+        override fun onInserted(position: Int, count: Int) {}
+        override fun onRemoved(position: Int, count: Int) {}
+        override fun onMoved(fromPosition: Int, toPosition: Int) {}
+        override fun onChanged(position: Int, count: Int, payload: Any?) {}
+    }
+
+    private val diffCallback = object : DiffUtil.ItemCallback<Brewery>() {
+        override fun areItemsTheSame(oldItem: Brewery, newItem: Brewery): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        /**
+         * Note that in kotlin, == checking on data classes compares all contents, but in Java,
+         * typically you'll implement Object#equals, and use it to compare object contents.
+         */
+        override fun areContentsTheSame(oldItem: Brewery, newItem: Brewery): Boolean {
+            return oldItem.name == newItem.name
+        }
+    }
 
 
- /*   @OptIn(ExperimentalCoroutinesApi::class)
+    /**
+     * This test case will validate - getOrCreatePager on BreweryListViewModel
+     *
+     * Test for below key aspects :
+     * - The correct PagingData is provided when getOrCreatePager is called with a specified breweryType.
+     * - The AsyncPagingDataDiffer properly processes and captures the items in the PagingData as expected.
+     * - The data output (in differ.snapshot().items) matches the mock data input, ensuring data consistency.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun createNewPagerForBreweryType_andVerifyPagingData() = runTest {
-        // Given: Define a brewery type for testing
+    fun verifyPagerCreationAndDataRetrieval() = runTest {
+        // Given: Define a brewery type to use for the test
         val breweryType = "micro"
 
-        // Mock data for a brewery of type "micro"
+        // Mock data representing a single brewery of the specified type "micro"
         val breweryMock = Brewery(
             id = "1",
             name = "Brewery One",
@@ -76,38 +105,40 @@ class BreweryListViewModelTest {
             state = "CA",
             street = "Brewery St"
         )
+
+        // Create a PagingData instance from the mock data
         val pagingData: PagingData<Brewery> = PagingData.from(listOf(breweryMock))
 
-        // Stub the repository to return paging data flow for the specified brewery type
+        // Stub the repository method to return a flow of PagingData when called with breweryType
         `when`(breweryRepository.getBreweriesStream(breweryType)).thenReturn(flowOf(pagingData))
 
-        // When: Call getOrCreatePager to create or retrieve a pager for the specified brewery type
-        val resultPager = viewModel.getOrCreatePager(breweryType)
+        // Create an AsyncPagingDataDiffer to help collect PagingData items
+        val differ = AsyncPagingDataDiffer(
+            diffCallback = diffCallback,
+            updateCallback = noopListUpdateCallback,
+            mainDispatcher = testDispatcher, // Set to test dispatcher for main thread
+            workerDispatcher = testDispatcher, // Set to test dispatcher for background work
+        )
 
-        // Prepare a list to hold the collected items
-        val collectedItems = mutableListOf<Brewery>()
-
-        // Collect items from PagingData
+        // Launch a job to collect paging data using the view model's pager function
         val job = launch {
-            resultPager.collectLatest { pagingData ->
-                pagingData.collect { brewery ->
-                    collectedItems.add(brewery)
-                }
+            // Collects paging data for the specified brewery type and submits it to the differ
+            viewModel.getOrCreatePager(breweryType).collectLatest { pagingData ->
+                differ.submitData(pagingData)
             }
         }
 
-        advanceUntilIdle() // Process all pending coroutine tasks
+        // Wait until all currently queued tasks are complete, simulating initial load completion
+        advanceUntilIdle()
 
-        // Then: Verify that the collected data matches the expected mock data
-        assertNotNull(resultPager)
-        assertEquals(listOf(breweryMock), collectedItems) // Check that the collected items match the expected mock list
+        // Verify that the items collected by the differ match the expected list of mock items
+        assertEquals(
+            listOf(breweryMock), differ.snapshot().items
+        )
 
-        // Confirm that the repository was called with the specified brewery type
-        verify(breweryRepository).getBreweriesStream(breweryType)
-
-        // Cancel the collection job to avoid test leaks
+        // Manually cancel the job to release resources as collectLatest is an infinite stream
         job.cancel()
-    }*/
+    }
 
 
     @Test
@@ -158,8 +189,16 @@ class BreweryListViewModelTest {
         val pagingDataBrewpub = PagingData.from(listOf(breweryMockBrewpub))
 
         // Mock the repository to return different PagingData flows for each brewery type
-        `when`(breweryRepository.getBreweriesStream(breweryTypeMicro)).thenReturn(flowOf(pagingDataMicro))
-        `when`(breweryRepository.getBreweriesStream(breweryTypeBrewpub)).thenReturn(flowOf(pagingDataBrewpub))
+        `when`(breweryRepository.getBreweriesStream(breweryTypeMicro)).thenReturn(
+            flowOf(
+                pagingDataMicro
+            )
+        )
+        `when`(breweryRepository.getBreweriesStream(breweryTypeBrewpub)).thenReturn(
+            flowOf(
+                pagingDataBrewpub
+            )
+        )
 
         // When: Call getOrCreatePager to create or retrieve pagers for each type
         val pagerForMicro = viewModel.getOrCreatePager(breweryTypeMicro)
