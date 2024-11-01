@@ -43,7 +43,9 @@ The app leverages several modern Android components and libraries:
         - **App Layer** - Presentation layer: Contains the UI, ViewModel classes
         - **Domain Layer** - Business logic: Includes Repository classes, PagingSource
         - **Data Layer** - Network and database interactions: Room entities, DAOs, Retrofit interfaces
-        - **Common Layer** -
+        - **Common Layer**
+     
+          
           **Used MVVM** - Model view View Model segregation
 
 - **Other Components**:
