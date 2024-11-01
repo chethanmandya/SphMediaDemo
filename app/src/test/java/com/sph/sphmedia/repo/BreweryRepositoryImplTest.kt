@@ -128,7 +128,7 @@ class BreweryRepositoryImplTest {
         assertEquals(expectedBrewery, localBrewery)
     }
 
- /*   @Test
+   @Test
     fun getBreweriesStream_returnsPagingData() = runTest {
         // Given
         val breweryType = "micro"
@@ -178,8 +178,10 @@ class BreweryRepositoryImplTest {
         `when`(
             breweryCacheDao.getLastUpdated(anyInt(), anyString())
         ).then {
-            0
+            System.currentTimeMillis()
         }
+
+
 
         val breweryPagingSource = BreweryPagingSource(
             breweryDao = breweryDao,
@@ -191,16 +193,19 @@ class BreweryRepositoryImplTest {
         // Define parameters for refreshing/loading the initial page
         val params = PagingSource.LoadParams.Refresh(
             key = 0, // Start from the first page
-            loadSize = 1, placeholdersEnabled = false
+            loadSize = 10, placeholdersEnabled = false
         )
 
-        val actual = breweryPagingSource.load(params)
+        val result = breweryPagingSource.load(params)
 
+
+       // Extract items from result if it is a successful page load
+       val items = (result as? PagingSource.LoadResult.Page)?.data
 
         // Then
         assertEquals(2, items?.size) // Check if we received two items
         if (items != null) {
             assertTrue(items.containsAll(breweries))
         } // Check if all breweries are included
-    }*/
+    }
 }
